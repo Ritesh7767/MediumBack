@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String      @id @default(uuid())
+  username    String      @unique
+  email       String      @unique
+  password    String
+  image       String?
+  description String?
+  post        Post[]
+  save        Save[]
+  history     History[]
+  Follower    Following[] @relation("following")
+  Following   Following[] @relation("follower")
+  Like        Like[]
+  Comment     Comment[]
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  title     String
+  subtitle  String?
+  content   String
+  date      DateTime
+  image     String?
+  topic     String?
+  userId    String
+  published Boolean   @default(false)
+  user      User      @relation(fields: [userId], references: [id])
+  save      Save[]
+  history   History[]
+  Like      Like[]
+  Comment   Comment[]
+}
+
+model Save {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model History {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Following {
+  id          String @id @default(uuid())
+  followerId  String
+  follower    User   @relation("follower", fields: [followerId], references: [id])
+  followingId String
+  following   User   @relation("following", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
+
+model Like {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Comment {
+  id      String @id @default(uuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  postId  String
+  post    Post   @relation(fields: [postId], references: [id])
+  comment String
+}
