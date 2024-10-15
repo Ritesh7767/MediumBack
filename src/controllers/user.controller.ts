@@ -33,6 +33,7 @@ const generateRefreshToken = ({id}: {id: string}) => {
 export const register = asyncHandler(async (req, res) => {
 
     const {username, email, password}: userInterface = req.body
+    console.log(username, email, password)
     if (!userRegister.safeParse(req.body).success) throw new ApiError(401, "Invalid data")
     
     const existingUser = await prisma.user.findFirst({
@@ -52,11 +53,17 @@ export const register = asyncHandler(async (req, res) => {
             password: hashPassword,
         },
         select: {
+            id: true,
             username: true,
             email: true
         }
     })
-    res.status(201).json(new ApiResponse(201, user, "User created successfully"))
+
+    if (!user) throw new ApiError(500, "Something went wrong while registration, please try again")
+    const accessToken = generateAccessToken(user)
+    const refreshToken = generateRefreshToken(user)
+
+    res.status(201).cookie("accessToken", accessToken).cookie("refreshToken", refreshToken).json(new ApiResponse(201, user, "User created successfully"))
 })
 
 export const login = asyncHandler(async (req, res) => {
@@ -72,7 +79,7 @@ export const login = asyncHandler(async (req, res) => {
         }
     )
 
-    if (!user) throw new ApiError(404, "Use does not exist")
+    if (!user) throw new ApiError(404, "User does not exist")
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password)
     if (!isPasswordCorrect) throw new ApiError(401, "Email or password is incorrect")
@@ -87,7 +94,6 @@ export const login = asyncHandler(async (req, res) => {
         image: user.image,
         description: user.description
     }
-
     res.status(200).cookie("accessToken", accessToken).cookie("refreshToken", refreshToken).json(new ApiResponse(200, result))
 })
 

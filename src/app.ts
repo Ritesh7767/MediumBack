@@ -1,20 +1,25 @@
-import express, { NextFunction } from 'express'
+import express from 'express'
 import cookieParser from 'cookie-parser'
-import multer from 'multer'
 import {v2 as cloudinary} from 'cloudinary'
-import path from 'path'
+import dotenv from 'dotenv'
+import cors from 'cors'
 
+dotenv.config()
 const app = express()
+
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.CLOUD_API_KEY,
     api_secret: process.env.CLOUD_API_SECRET
 })
 
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}))
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 app.use(cookieParser())
-
 
 app.get("/", (req, res) => {
     res.send("health check server")
@@ -35,29 +40,28 @@ app.use("/api/v1/follower", followingRouter)
 import hslRouter from './routers/hsl.router'
 app.use('/api/v1', hslRouter)
 
-// import { Request, Response } from 'express'
-// import ApiError from './utils/apiError'
+import { Request, Response } from 'express'
+import ApiError from './utils/apiError'
 
-// app.use((error: Error, req: Request, res: Response) => {
-
-//     if (error instanceof ApiError){
-//         const response = {
-//             status: error.status,
-//             message: error.message,
-//             data: error.data,
-//             stack: error.stack,
-//             success: false
-//         }
-
-//         return res.status(error.status).json(response)
+// app.use((err : Error, req : Request, res : Response, next : NextFunction) => {
+//     if(err instanceof ApiError){
+//         res.status(err.status).json({
+//             status: err.status,
+//             success : false,
+//             message : err.message,
+//             errors : err.stack,
+//             data : err.data
+//         })
 //     }
-//     res.status(500).json({
-//         status: 500,
-//         message: "Internal Server Error",
-//         data: [],
-//         stack: "",
-//         success: false
-//     })
+//     else {
+//         res.status(500).json({
+//             status: 500,
+//             success : false,
+//             message : "Internal Server Error",
+//             errors : [],
+//             data : null
+//         })
+//     }
 // })
 
 

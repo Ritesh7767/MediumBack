@@ -3,17 +3,18 @@ import asyncHandler from "../utils/asyncHandler";
 import { postType, postValidation } from "../zod/post.zod";
 import ApiResponse from "../utils/apiResponse";
 import { prisma } from "../lib/prisma";
-import { PrismaClient } from "@prisma/client/extension";
 import uploadToCloudinary from "../utils/cloudinary";
 
 export const createPost = asyncHandler(async (req, res) => {
 
-    const {title, content, subtitle, image}: postType = req.body
+    console.log("hit")
+    const {title, content}: postType = req.body
 
-    if (!postValidation.safeParse(req.body).success) throw new ApiError(401, "Invalid data provided")
-        
-    let imageUrl
+    console.log(title, content, req.userId)
+    let imageUrl = ""
+
     const filepath = req.file?.path
+    console.log(filepath)
 
     if (filepath){
         imageUrl = await uploadToCloudinary(filepath)
@@ -22,7 +23,6 @@ export const createPost = asyncHandler(async (req, res) => {
     const post = await prisma.post.create({
         data: {
             title,
-            subtitle,
             content,
             image: imageUrl,
             date: new Date(),
@@ -114,7 +114,7 @@ export const publishPost = asyncHandler(async (req, res) => {
             id
         },
         data: {
-            published: !currentPost.published,
+        published: !currentPost.published,
             topic
         }
     })
@@ -215,8 +215,12 @@ export const updatePost = asyncHandler(async (req, res) => {
     const id = req.query.id as string
     if (!id) throw new ApiError(400, "Bad Request")
 
-    const {title, subtitle, content, image} = req.body
-    if (!postValidation.safeParse(req.body).success) throw new ApiError(400, "Invalid data provided")
+    let {title, subtitle, content, image} = req.body
+
+    const filepath = req.file?.path
+    if (filepath){
+        image = await uploadToCloudinary(filepath)
+    }
 
     const post = await prisma.post.update({
         where: {
@@ -227,7 +231,6 @@ export const updatePost = asyncHandler(async (req, res) => {
             title, subtitle, content, image
         }
     })
-
     res.status(200).json(new ApiResponse(200, post, "Post Updated"))
 })
 
