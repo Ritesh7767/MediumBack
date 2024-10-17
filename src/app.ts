@@ -14,7 +14,8 @@ cloudinary.config({
 })
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    // origin: "http://localhost:5174",
     credentials: true
 }))
 app.use(express.json())
@@ -40,29 +41,29 @@ app.use("/api/v1/follower", followingRouter)
 import hslRouter from './routers/hsl.router'
 app.use('/api/v1', hslRouter)
 
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import ApiError from './utils/apiError'
 
-// app.use((err : Error, req : Request, res : Response, next : NextFunction) => {
-//     if(err instanceof ApiError){
-//         res.status(err.status).json({
-//             status: err.status,
-//             success : false,
-//             message : err.message,
-//             errors : err.stack,
-//             data : err.data
-//         })
-//     }
-//     else {
-//         res.status(500).json({
-//             status: 500,
-//             success : false,
-//             message : "Internal Server Error",
-//             errors : [],
-//             data : null
-//         })
-//     }
-// })
+app.use((err : Error, req : Request, res : Response, next : NextFunction) => {
+    if(err instanceof ApiError){
+        res.status(err.status).json({
+            status: err.status,
+            success : false,
+            message : err.message,
+            errors : err.stack,
+            data : err.data
+        })
+    }
+    else {
+        res.status(500).json({
+            status: 500,
+            success : false,
+            message : "Internal Server Error",
+            errors : [],
+            data : null
+        })
+    }
+})
 
 
 export default app

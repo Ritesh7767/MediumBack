@@ -95,8 +95,9 @@ export const getDetailPost = asyncHandler(async (req, res) => {
 
 export const publishPost = asyncHandler(async (req, res) => {
 
+    console.log("publish hit")
     const id = req.query.id as string
-    const {topic} = req.body
+    const {topic, subtitle} = req.body
 
     if (!id) throw new ApiError(400, "Bad Request")
 
@@ -115,7 +116,8 @@ export const publishPost = asyncHandler(async (req, res) => {
         },
         data: {
         published: !currentPost.published,
-            topic
+            topic,
+            subtitle
         }
     })
 

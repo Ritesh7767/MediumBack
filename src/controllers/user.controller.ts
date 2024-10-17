@@ -63,7 +63,7 @@ export const register = asyncHandler(async (req, res) => {
     const accessToken = generateAccessToken(user)
     const refreshToken = generateRefreshToken(user)
 
-    res.status(201).cookie("accessToken", accessToken).cookie("refreshToken", refreshToken).json(new ApiResponse(201, user, "User created successfully"))
+    res.status(201).json(new ApiResponse(201, {...user, accessToken, refreshToken}, "User created successfully"))
 })
 
 export const login = asyncHandler(async (req, res) => {
@@ -94,7 +94,7 @@ export const login = asyncHandler(async (req, res) => {
         image: user.image,
         description: user.description
     }
-    res.status(200).cookie("accessToken", accessToken).cookie("refreshToken", refreshToken).json(new ApiResponse(200, result))
+    res.status(201).json(new ApiResponse(201, {...result, accessToken, refreshToken}, "User logged in successfully"))
 })
 
 export const getUsers = asyncHandler(async (req, res) => {
